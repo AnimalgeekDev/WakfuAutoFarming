@@ -1,3 +1,5 @@
 assets
 debugger/results
 debugger/test_img
+
+libs/__pycache__
