@@ -1,10 +1,10 @@
 import cv2
-import numpy as np
+import random
 
 def search_template_on_img(template , img , tolerancy):
     # Convertir las imágenes a escala de grises
-    template_mod  = cv2.cvtColor(template, cv2.COLOR_BGR2GRAY)
-    img_mod  = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    template_mod  = template #cv2.cvtColor(template, cv2.COLOR_BGR2GRAY)
+    img_mod  = img #cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
     # Inicializar el detector SIFT
     sift = cv2.SIFT_create()
@@ -30,11 +30,8 @@ def search_template_on_img(template , img , tolerancy):
         # Obtener las coordenadas (x, y) de la mejor coincidencia en la imagen de la captura de pantalla
         x, y = keypoints_img[best_match.trainIdx].pt
 
-        # Mostrar las coordenadas
-        print(f"La mejor coincidencia se encuentra en las coordenadas (x, y): ({x}, {y})")
-
         img_match = cv2.drawMatches(template_mod, keypoints_query, img_mod, keypoints_img, [best_match], None, flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
 
-        return (int(x), int(y), img_match)
+        return (int(x + random.randrange(20)), int(y + random.randrange(20)), tolerancy * n.distance, m.distance, img_match)
 
-    return (0,0, None)
+    return (0, 0, tolerancy * n.distance, m.distance, None)

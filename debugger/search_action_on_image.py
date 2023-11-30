@@ -8,10 +8,12 @@ from libs import load_files
 from libs import search_on_img
 
 patchTestImages = "test_img"
-patchFarmingIcons = "../farming_icons"
+patchFarmingIcons = "../farming_actions"
 patchResults = "results"
 
 tolerancy = 0.75
+
+showImg = False
 
 testImages = load_files.get_templates(patchTestImages)
 
@@ -24,9 +26,17 @@ for imageUrl in testImages:
         print(f'{patchResults}/{imageUrl.split(".")[0].split("\\")[-1]}-{templateUrl.split("\\")[-1]}')
         template = cv2.imread(templateUrl, cv2.IMREAD_UNCHANGED)
 
-        x, y = search_on_img.search_template_on_img(template, test_img, tolerancy)
+        x, y, tol, dec, match = search_on_img.search_template_on_img(template, test_img, tolerancy)
+
+        if showImg:
+            cv2.imshow("Best Match", match)
+            cv2.waitKey(0)
+            cv2.destroyAllWindows()
         
         if x > 0 and y > 0:
+            # Mostrar las coordenadas
+            print(f"Better pos detection (x, y): ({x}, {y}); (dec < tol): ({dec},{tol})")
+            
             h, w =  template.shape[:2]
 
             img_copy = test_img.copy()
