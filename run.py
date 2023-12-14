@@ -162,7 +162,7 @@ class Farming:
                             self.app.state = 1
                             self.delay.set_seconds(4)
 
-            self.app.fps_label_var.set(f'{self.fps_label}: {1/(time() - self.loop_time):.2f}')
+            self.app.fps_label_var.set(f'{self.fps_label}: {1/(time() - self.loop_time if time() - self.loop_time > 0 else 1):.2f}')
             self.app.state_label_var.set(f'{self.state_label}: {"Search Resource" if self.state == 1 else "Search Action" if self.state == 2 else "Waiting"}')
 
             self.loop_time = time()            
