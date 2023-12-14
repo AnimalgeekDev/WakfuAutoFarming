@@ -36,12 +36,11 @@ class SearchOnImg:
             result = cv2.matchTemplate(img_mod, template_mod, cv2.TM_CCOEFF_NORMED)
             locations = np.where(result >= threshold)
         
-        locations = list(zip(*locations[::-1]))
-
         center_x = 0
         center_y = 0
-
+        
         if len(locations) < self.max_result:
+            locations = list(zip(*locations[::-1]))
             rectangles = []
             for loc in locations:
                 rect = [int(loc[0]), int(loc[1]), resource_w, resource_h]
