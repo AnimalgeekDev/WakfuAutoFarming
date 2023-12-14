@@ -4,7 +4,6 @@ import numpy as np
 class SearchOnImg:
     bf = None
 
-    threshold = 0
     match_type = '1'
     max_result = 0
 
@@ -17,7 +16,7 @@ class SearchOnImg:
     def __init__(self):
         self.bf = cv2.BFMatcher(cv2.NORM_L2, crossCheck=True)
 
-    def search_template_on_img(self, img, template):
+    def search_template_on_img(self, img, template, threshold):
         img_mod = cv2.cvtColor(img, cv2.COLOR_RGBA2GRAY)
         template_mod = cv2.cvtColor(template, cv2.COLOR_RGBA2GRAY)
 
@@ -29,13 +28,13 @@ class SearchOnImg:
 
         if self.match_type == '1':
             result = cv2.matchTemplate(img_mod, template_mod, cv2.TM_SQDIFF_NORMED)
-            locations = np.where(result <= self.threshold)
+            locations = np.where(result <= threshold)
         elif self.match_type == '2':
             result = cv2.matchTemplate(img_mod, template_mod, cv2.TM_CCORR_NORMED)
-            locations = np.where(result >= self.threshold)
+            locations = np.where(result >= threshold)
         elif self.match_type == '3':
             result = cv2.matchTemplate(img_mod, template_mod, cv2.TM_CCOEFF_NORMED)
-            locations = np.where(result >= self.threshold)
+            locations = np.where(result >= threshold)
         
         locations = list(zip(*locations[::-1]))
 
@@ -78,7 +77,7 @@ def main():
 
     searcher = SearchOnImg()
     
-    searcher.threshold = 0.075
+    searcher.threshold_resource = 0.075
     searcher.match_type = '1'
 
     x, y, match, multi_math, result_match, _ = searcher.search_template_on_img(img, template)

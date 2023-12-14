@@ -13,7 +13,8 @@ from libs.utils import Utils
 from libs import clicks
 
 class Farming:
-    threshold = 0.05
+    threshold_resource = 0.05
+    threshold_action = 0.05
     match_type = '1'
     fps_label = "FPS"
     state_label = "STATE"
@@ -54,7 +55,8 @@ class Farming:
     def __init__(self, app: WakfuFarmingGUI):
         self.app = app
 
-        app.threshold_var.set(self.threshold)
+        app.threshold_resource_var.set(self.threshold_resource)
+        app.threshold_action_var.set(self.threshold_action)
         app.match_type_var.set(self.match_type)
         app.window_name_var.set(self.window_name)
         app.fps_label_var.set(self.fps_label)
@@ -86,7 +88,8 @@ class Farming:
         self.img_actions = loader.import_templates(self.routes_actions)
     
     def start_capture(self):
-        self.app.threshold_slider.set(self.threshold)
+        self.app.threshold_resource_slider.set(self.threshold_resource)
+        self.app.threshold_action_slider.set(self.threshold_action)
         self.app.HMax_slider.set(self.HMax)
         self.app.VMax_slider.set(self.VMax)
         self.app.SMax_slider.set(self.SMax)
@@ -103,7 +106,8 @@ class Farming:
 
             self.state = self.app.state
 
-            self.threshold = float(self.app.threshold_var.get()) if self.utils.is_float(self.app.threshold_var.get()) else 0
+            self.threshold_resource = float(self.app.threshold_resource_var.get()) if self.utils.is_float(self.app.threshold_resource_var.get()) else 0
+            self.threshold_action = float(self.app.threshold_action_var.get()) if self.utils.is_float(self.app.threshold_action_var.get()) else 0
             self.HMax = int(float(self.app.HMax_var.get()) // 1) if self.utils.is_int(self.app.HMax_var.get()) else 0
             self.VMax = int(float(self.app.VMax_var.get()) // 1) if self.utils.is_int(self.app.VMax_var.get()) else 0
             self.SMax = int(float(self.app.SMax_var.get()) // 1) if self.utils.is_int(self.app.SMax_var.get()) else 0
@@ -121,7 +125,6 @@ class Farming:
             self.run_autofarming = bool(int(self.app.run_autofarming_var.get()))
             
             if self.app is not None and self.app.state != 0:
-                self.seacher.threshold = self.threshold
                 self.seacher.match_type = self.match_type
                 self.seacher.max_result = self.max_results
                 self.seacher.groupThreshold = self.groupThreshold
@@ -129,7 +132,7 @@ class Farming:
 
                 if self.state == 1 and self.delay.wait():
                     for resource in self.img_resources:
-                        x, y, match, multi_math, result_match, matches = self.seacher.search_template_on_img(capture, resource)
+                        x, y, match, multi_math, result_match, matches = self.seacher.search_template_on_img(capture, resource, self.threshold_resource)
                         
                         self.app.rectangle_match = match
                         self.app.multi_rectangle_match = multi_math
@@ -145,7 +148,7 @@ class Farming:
 
                 if self.state == 2 and self.delay.wait():
                     for resource in self.img_actions:
-                        x, y, match, multi_math, result_match, matches = self.seacher.search_template_on_img(capture, resource)
+                        x, y, match, multi_math, result_match, matches = self.seacher.search_template_on_img(capture, resource, self.threshold_action)
                         
                         self.app.rectangle_match = match
                         self.app.multi_rectangle_match = multi_math

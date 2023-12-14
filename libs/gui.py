@@ -23,7 +23,8 @@ class WakfuFarmingGUI:
 
     state = 0
 
-    threshold_var = None
+    threshold_resource_var = None
+    threshold_action_var = None
     match_type_var = None
     fps_label_var = None
     state_label_var = None
@@ -48,7 +49,7 @@ class WakfuFarmingGUI:
         self.notebook.pack(expand=1, fill="both")
 
         self.tab_1 = ttk.Frame(self.notebook)
-        self.notebook.add(self.tab_1, text="Threshold")
+        self.notebook.add(self.tab_1, text="Thresholds")
         self.create_tab_1()
 
         self.tab_2 = ttk.Frame(self.notebook)
@@ -67,63 +68,71 @@ class WakfuFarmingGUI:
         self.capture_thread.start()
 
     def create_tab_1(self):
-        threshold_label = ttk.Label(self.tab_1, text="Threshold")
-        self.threshold_var = tk.StringVar()
-        self.threshold_slider = ttk.Scale(self.tab_1, from_=0, to=self.threshold_max, orient="horizontal", variable=self.threshold_var)
-        threshold_input = ttk.Entry(self.tab_1, textvariable=self.threshold_var)
-        threshold_label.grid(row=0, column=0, pady=5)
-        self.threshold_slider.grid(row=0, column=1, pady=10)
-        threshold_input.grid(row=0, column=2, pady=5)
+        threshold_resource_label = ttk.Label(self.tab_1, text="Threshold resource")
+        self.threshold_resource_var = tk.StringVar()
+        self.threshold_resource_slider = ttk.Scale(self.tab_1, from_=0, to=self.threshold_resource_max, orient="horizontal", variable=self.threshold_resource_var)
+        threshold_resource_input = ttk.Entry(self.tab_1, textvariable=self.threshold_resource_var)
+        threshold_resource_label.grid(row=0, column=0, pady=5)
+        self.threshold_resource_slider.grid(row=0, column=1, pady=10)
+        threshold_resource_input.grid(row=0, column=2, pady=5)
+
+        threshold_action_label = ttk.Label(self.tab_1, text="Threshold action")
+        self.threshold_action_var = tk.StringVar()
+        self.threshold_action_slider = ttk.Scale(self.tab_1, from_=0, to=self.threshold_action_max, orient="horizontal", variable=self.threshold_action_var)
+        threshold_action_input = ttk.Entry(self.tab_1, textvariable=self.threshold_action_var)
+        threshold_action_label.grid(row=1, column=0, pady=5)
+        self.threshold_action_slider.grid(row=1, column=1, pady=10)
+        threshold_action_input.grid(row=1, column=2, pady=5)
 
         #HVS
         HMax_label = ttk.Label(self.tab_1, text="HMax")
         self.HMax_var = tk.StringVar()
         self.HMax_slider = ttk.Scale(self.tab_1, from_=0, to=self.HMax, orient="horizontal", variable=self.HMax_var)
         HMax_input = ttk.Entry(self.tab_1, textvariable=self.HMax_var)
-        HMax_label.grid(row=1, column=0, pady=5)
-        self.HMax_slider.grid(row=1, column=1, pady=10)
-        HMax_input.grid(row=1, column=2, pady=5)
+        HMax_label.grid(row=2, column=0, pady=5)
+        self.HMax_slider.grid(row=2, column=1, pady=10)
+        HMax_input.grid(row=2, column=2, pady=5)
         
         VMax_label = ttk.Label(self.tab_1, text="VMax")
         self.VMax_var = tk.StringVar()
         self.VMax_slider = ttk.Scale(self.tab_1, from_=0, to=self.VMax, orient="horizontal", variable=self.VMax_var)
         VMax_input = ttk.Entry(self.tab_1, textvariable=self.VMax_var)
-        VMax_label.grid(row=2, column=0, pady=5)
-        self.VMax_slider.grid(row=2, column=1, pady=10)
-        VMax_input.grid(row=2, column=2, pady=5)
+        VMax_label.grid(row=3, column=0, pady=5)
+        self.VMax_slider.grid(row=3, column=1, pady=10)
+        VMax_input.grid(row=3, column=2, pady=5)
         
         SMax_label = ttk.Label(self.tab_1, text="SMax")
         self.SMax_var = tk.StringVar()
         self.SMax_slider = ttk.Scale(self.tab_1, from_=0, to=self.SMax, orient="horizontal", variable=self.SMax_var)
         SMax_input = ttk.Entry(self.tab_1, textvariable=self.SMax_var)
-        SMax_label.grid(row=3, column=0, pady=5)
-        self.SMax_slider.grid(row=3, column=1, pady=10)
-        SMax_input.grid(row=3, column=2, pady=5)
+        SMax_label.grid(row=4, column=0, pady=5)
+        self.SMax_slider.grid(row=4, column=1, pady=10)
+        SMax_input.grid(row=4, column=2, pady=5)
 
         #HSV - Min
         HMin_label = ttk.Label(self.tab_1, text="HMin")
         self.HMin_var = tk.StringVar()
         self.HMin_slider = ttk.Scale(self.tab_1, from_=0, to=self.HMin, orient="horizontal", variable=self.HMin_var)
         HMin_input = ttk.Entry(self.tab_1, textvariable=self.HMin_var)
-        HMin_label.grid(row=4, column=0, pady=5)
-        self.HMin_slider.grid(row=4, column=1, pady=10)
-        HMin_input.grid(row=4, column=2, pady=5)
+        HMin_label.grid(row=5, column=0, pady=5)
+        self.HMin_slider.grid(row=5, column=1, pady=10)
+        HMin_input.grid(row=5, column=2, pady=5)
         
         VMin_label = ttk.Label(self.tab_1, text="VMin")
         self.VMin_var = tk.StringVar()
         self.VMin_slider = ttk.Scale(self.tab_1, from_=0, to=self.VMin, orient="horizontal", variable=self.VMin_var)
         VMin_input = ttk.Entry(self.tab_1, textvariable=self.VMin_var)
-        VMin_label.grid(row=5, column=0, pady=5)
-        self.VMin_slider.grid(row=5, column=1, pady=10)
-        VMin_input.grid(row=5, column=2, pady=5)
+        VMin_label.grid(row=6, column=0, pady=6)
+        self.VMin_slider.grid(row=6, column=1, pady=10)
+        VMin_input.grid(row=6, column=2, pady=5)
         
         SMin_label = ttk.Label(self.tab_1, text="SMin")
         self.SMin_var = tk.StringVar()
         self.SMin_slider = ttk.Scale(self.tab_1, from_=0, to=self.SMin, orient="horizontal", variable=self.SMin_var)
         SMin_input = ttk.Entry(self.tab_1, textvariable=self.SMin_var)
-        SMin_label.grid(row=6, column=0, pady=5)
-        self.SMin_slider.grid(row=6, column=1, pady=10)
-        SMin_input.grid(row=6, column=2, pady=5)
+        SMin_label.grid(row=7, column=0, pady=5)
+        self.SMin_slider.grid(row=7, column=1, pady=10)
+        SMin_input.grid(row=7, column=2, pady=5)
 
     def create_tab_2(self):
         match_type_label = ttk.Label(self.tab_2, text="Match type:")
