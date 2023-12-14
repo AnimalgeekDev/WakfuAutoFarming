@@ -1,37 +1,94 @@
 import cv2
-import random
+import numpy as np
 
-def search_template_on_img(template , img , tolerancy):
-    # Convertir las imágenes a escala de grises
-    template_mod  = template #cv2.cvtColor(template, cv2.COLOR_BGR2GRAY)
-    img_mod  = img #cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+class SearchOnImg:
+    bf = None
 
-    # Inicializar el detector SIFT
-    sift = cv2.SIFT_create()
+    threshold = 0
+    match_type = '1'
+    max_result = 0
 
-    # Encontrar los puntos clave y los descriptores con SIFT
-    keypoints_query, descriptors_query = sift.detectAndCompute(template_mod, None)
-    keypoints_img, descriptors_img = sift.detectAndCompute(img_mod, None)
+    line_color = (0,0,255)
+    line_size = cv2.LINE_4
 
-    # Utilizar el matcher de fuerza bruta para encontrar las coincidencias entre descriptores
-    bf = cv2.BFMatcher()
-    matches = bf.knnMatch(descriptors_query, descriptors_img, k=2)
+    groupThreshold=0
+    eps=0
 
-    # Aplicar la relación de prueba de razón para obtener buenas coincidencias
-    good_matches = []
-    for m, n in matches:
-        if m.distance < tolerancy * n.distance:
-            good_matches.append(m)
+    def __init__(self):
+        self.bf = cv2.BFMatcher(cv2.NORM_L2, crossCheck=True)
 
-    if len(good_matches) > 0:
-        # Obtener la mejor coincidencia
-        best_match = max(good_matches, key=lambda x: x.distance)
+    def search_template_on_img(self, img, template):
+        img_mod = cv2.cvtColor(img, cv2.COLOR_RGBA2GRAY)
+        template_mod = cv2.cvtColor(template, cv2.COLOR_RGBA2GRAY)
 
-        # Obtener las coordenadas (x, y) de la mejor coincidencia en la imagen de la captura de pantalla
-        x, y = keypoints_img[best_match.trainIdx].pt
+        img_match = img.copy()
+        img_multi_mach = img.copy()
 
-        img_match = cv2.drawMatches(template_mod, keypoints_query, img_mod, keypoints_img, [best_match], None, flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
+        resource_w = template_mod.shape[1]
+        resource_h = template_mod.shape[0]
 
-        return (int(x + random.randrange(20)), int(y + random.randrange(20)), tolerancy * n.distance, m.distance, img_match)
+        if self.match_type == '1':
+            result = cv2.matchTemplate(img_mod, template_mod, cv2.TM_SQDIFF_NORMED)
+            locations = np.where(result <= self.threshold)
+        elif self.match_type == '2':
+            result = cv2.matchTemplate(img_mod, template_mod, cv2.TM_CCORR_NORMED)
+            locations = np.where(result >= self.threshold)
+        elif self.match_type == '3':
+            result = cv2.matchTemplate(img_mod, template_mod, cv2.TM_CCOEFF_NORMED)
+            locations = np.where(result >= self.threshold)
+        
+        locations = list(zip(*locations[::-1]))
 
-    return (0, 0, tolerancy * n.distance, m.distance, None)
+        center_x = 0
+        center_y = 0
+
+        if len(locations) < self.max_result:
+            rectangles = []
+            for loc in locations:
+                rect = [int(loc[0]), int(loc[1]), resource_w, resource_h]
+                rectangles.append(rect)
+                rectangles.append(rect)
+            
+            rectangles, weights = cv2.groupRectangles(rectangles, groupThreshold=self.groupThreshold, eps=self.eps)
+
+            if len(rectangles):
+                for (x, y, w, h) in rectangles:
+                    center_x = x + w//2
+                    center_y = y + h//2
+                    
+                    top_left = (x , y)
+                    bottom_right = (x+w , y+h)
+
+                    img_multi_mach = cv2.rectangle(img_multi_mach, top_left, bottom_right, self.line_color, self.line_size)
+
+                x, y, w, h = rectangles[0]
+                center_x = x + w//2
+                center_y = y + h//2
+
+                top_left = (x , y)
+                bottom_right = (x+w , y+h)
+                
+                img_match = cv2.rectangle(img_match, top_left, bottom_right, self.line_color, self.line_size)
+
+        return center_x, center_y, img_match, img_multi_mach, (result * 255).astype(np.uint8), len(locations)
+    
+def main():
+    img = cv2.imread('debugger/test_img/cerca.png', cv2.IMREAD_UNCHANGED)
+    template = cv2.imread('resource_img/girasol.png', cv2.IMREAD_UNCHANGED)
+
+    searcher = SearchOnImg()
+    
+    searcher.threshold = 0.075
+    searcher.match_type = '1'
+
+    x, y, match, multi_math, result_match, _ = searcher.search_template_on_img(img, template)
+
+    cv2.imshow('match', match)
+    cv2.imshow('multi_math', multi_math)
+    cv2.imshow('result_match', result_match)
+
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+if __name__ == "__main__":
+    main()
