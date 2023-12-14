@@ -12,7 +12,8 @@ class WakfuFarmingGUI:
     result_match = None
     plain_img = None
 
-    threshold_max = 1
+    threshold_resource_max = 1
+    threshold_action_max = 1
 
     HMax=179
     VMax=255
