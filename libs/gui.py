@@ -189,6 +189,17 @@ class WakfuFarmingGUI:
         max_window_height_label.grid(row=7, column=0)
         max_window_height_text.grid(row=7, column=1)
 
+        run_autofarming_label = ttk.Label(self.tab_3, text="Auto farming")
+        
+        self.run_autofarming_var = tk.StringVar()
+        self.run_autofarming_var.set(True)
+        self.run_autofarming_on = tk.Radiobutton(self.tab_3, text="ON", variable=self.run_autofarming_var, value=True)
+        self.run_autofarming_off = tk.Radiobutton(self.tab_3, text="OFF", variable=self.run_autofarming_var, value=False)
+
+        run_autofarming_label.grid(row=8, column=0)
+        self.run_autofarming_on.grid(row=8, column=1, padx=10)
+        self.run_autofarming_off.grid(row=8, column=2, padx=10)
+
     def create_bottom_frame(self):
         self.bottom_frame = ttk.Frame(self.root)
         self.bottom_frame.pack(expand=1, fill="both")

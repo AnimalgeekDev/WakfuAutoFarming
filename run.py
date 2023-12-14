@@ -9,6 +9,7 @@ from libs.window_capture import WindowCapture
 from libs.search_on_img import SearchOnImg
 from libs.load_files import LoadFiles
 from libs.delay_bolean import DelayBolean
+from libs.utils import Utils
 from libs import clicks
 
 class Farming:
@@ -27,11 +28,13 @@ class Farming:
     eps=0.5
     window_width=1920
     window_height=1080
+    run_autofarming=True
 
     app = None
     capturer = None
     seacher = None
     delay = None
+    utils = None
 
     routes_resources = []
     img_resources = []
@@ -63,9 +66,11 @@ class Farming:
         app.eps_var.set(self.eps)
         app.window_width_var.set(self.window_width)
         app.window_height_var.set(self.window_height)
+        app.run_autofarming_var.set(self.run_autofarming)
 
         self.seacher = SearchOnImg()
         self.delay = DelayBolean()
+        self.utils = Utils()
 
         self.load_assets()
 
@@ -97,20 +102,23 @@ class Farming:
             capture = self.capturer.get_screenshot()
 
             self.state = self.app.state
-            self.threshold = float(self.app.threshold_var.get())
-            self.match_type = self.app.match_type_var.get()
-            self.max_results = int(self.app.max_results_var.get()) if self.app.max_results_var.get() else 0
-            self.groupThreshold = int(self.app.groupThreshold_var.get()) if self.app.groupThreshold_var.get() else 0
-            self.eps = float(self.app.eps_var.get()) if self.app.eps_var.get() else 0
 
-            self.HMax = float(self.app.HMax_var.get()) // 1 if self.app.HMax_var.get() else 0
-            self.VMax = float(self.app.VMax_var.get()) // 1 if self.app.VMax_var.get() else 0
-            self.SMax = float(self.app.SMax_var.get()) // 1 if self.app.SMax_var.get() else 0
-            self.HMin = float(self.app.HMin_var.get()) // 1 if self.app.HMin_var.get() else 0
-            self.VMin = float(self.app.VMin_var.get()) // 1 if self.app.VMin_var.get() else 0
-            self.SMin = float(self.app.SMin_var.get()) // 1 if self.app.SMin_var.get() else 0
-            self.window_width = float(self.app.window_width_var.get()) // 1 if self.app.window_width_var.get() else 0
-            self.window_height = float(self.app.window_height_var.get()) // 1 if self.app.window_height_var.get() else 0
+            self.threshold = float(self.app.threshold_var.get()) if self.utils.is_float(self.app.threshold_var.get()) else 0
+            self.HMax = int(float(self.app.HMax_var.get()) // 1) if self.utils.is_int(self.app.HMax_var.get()) else 0
+            self.VMax = int(float(self.app.VMax_var.get()) // 1) if self.utils.is_int(self.app.VMax_var.get()) else 0
+            self.SMax = int(float(self.app.SMax_var.get()) // 1) if self.utils.is_int(self.app.SMax_var.get()) else 0
+            self.HMin = int(float(self.app.HMin_var.get()) // 1) if self.utils.is_int(self.app.HMin_var.get()) else 0
+            self.VMin = int(float(self.app.VMin_var.get()) // 1) if self.utils.is_int(self.app.VMin_var.get()) else 0
+            self.SMin = int(float(self.app.SMin_var.get()) // 1) if self.utils.is_int(self.app.SMin_var.get()) else 0
+            
+            self.match_type = self.app.match_type_var.get()
+            
+            self.max_results = int(float(self.app.max_results_var.get()) // 1) if self.utils.is_int(self.app.max_results_var.get()) else 0
+            self.groupThreshold = int(float(self.app.groupThreshold_var.get()) // 1) if self.utils.is_int(self.app.groupThreshold_var.get()) else 0
+            self.eps = float(self.app.eps_var.get()) if self.utils.is_float(self.app.eps_var.get()) else 0
+            self.window_width = int(float(self.app.window_width_var.get()) // 1) if self.utils.is_int(self.app.window_width_var.get()) else 0
+            self.window_height = int(float(self.app.window_height_var.get()) // 1) if self.utils.is_int(self.app.window_height_var.get()) else 0
+            self.run_autofarming = bool(int(self.app.run_autofarming_var.get()))
             
             if self.app is not None and self.app.state != 0:
                 self.seacher.threshold = self.threshold
@@ -130,9 +138,10 @@ class Farming:
                         self.app.matches_label_var.set(f'{self.last_detection_label}: {matches}')
                         
                     if x > 0 and y > 0:
-                        clicks.right_click(x, y)
-                        self.app.state = 2
-                        self.delay.set_seconds(1)
+                        if self.run_autofarming:
+                            clicks.right_click(x, y)
+                            self.app.state = 2
+                            self.delay.set_seconds(1)
 
                 if self.state == 2 and self.delay.wait():
                     for resource in self.img_actions:
@@ -145,12 +154,13 @@ class Farming:
                         self.app.matches_label_var.set(f'{self.last_detection_label}: {matches}')
                         
                     if x > 0 and y > 0:
-                        clicks.right_click(x, y)
-                        self.app.state = 1
-                        self.delay.set_seconds(4)
+                        if self.run_autofarming:
+                            clicks.right_click(x, y)
+                            self.app.state = 1
+                            self.delay.set_seconds(4)
 
             self.app.fps_label_var.set(f'{self.fps_label}: {1/(time() - self.loop_time):.2f}')
-            self.app.state_label_var.set(f'{self.state_label}: {self.state}')
+            self.app.state_label_var.set(f'{self.state_label}: {"Search Resource" if self.state == 1 else "Search Action" if self.state == 2 else "Waiting"}')
 
             self.loop_time = time()            
             self.app.plain_img = capture
