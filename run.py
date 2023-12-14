@@ -25,8 +25,11 @@ class Farming:
 
     groupThreshold=1
     eps=0.5
+    window_width=1920
+    window_height=1080
 
     app = None
+    capturer = None
     seacher = None
     delay = None
 
@@ -58,6 +61,8 @@ class Farming:
         app.max_results_var.set(self.max_results)
         app.groupThreshold_var.set(self.groupThreshold)
         app.eps_var.set(self.eps)
+        app.window_width_var.set(self.window_width)
+        app.window_height_var.set(self.window_height)
 
         self.seacher = SearchOnImg()
         self.delay = DelayBolean()
@@ -76,8 +81,6 @@ class Farming:
         self.img_actions = loader.import_templates(self.routes_actions)
     
     def start_capture(self):
-        capturer = WindowCapture(self.window_name)
-
         self.app.threshold_slider.set(self.threshold)
         self.app.HMax_slider.set(self.HMax)
         self.app.VMax_slider.set(self.VMax)
@@ -87,7 +90,11 @@ class Farming:
         self.app.SMin_slider.set(self.SMin)
 
         while(True):
-            capture = capturer.get_screenshot()
+            self.capturer = WindowCapture(self.window_name)
+            self.capturer.w = self.window_width
+            self.capturer.h = self.window_height
+            
+            capture = self.capturer.get_screenshot()
 
             self.state = self.app.state
             self.threshold = float(self.app.threshold_var.get())
@@ -102,6 +109,8 @@ class Farming:
             self.HMin = float(self.app.HMin_var.get()) // 1 if self.app.HMin_var.get() else 0
             self.VMin = float(self.app.VMin_var.get()) // 1 if self.app.VMin_var.get() else 0
             self.SMin = float(self.app.SMin_var.get()) // 1 if self.app.SMin_var.get() else 0
+            self.window_width = float(self.app.window_width_var.get()) // 1 if self.app.window_width_var.get() else 0
+            self.window_height = float(self.app.window_height_var.get()) // 1 if self.app.window_height_var.get() else 0
             
             if self.app is not None and self.app.state != 0:
                 self.seacher.threshold = self.threshold
@@ -148,6 +157,7 @@ class Farming:
 
             if self.app.reset_flag:
                 self.load_assets()
+
                 self.app.reset_flag = False
 
 def main():

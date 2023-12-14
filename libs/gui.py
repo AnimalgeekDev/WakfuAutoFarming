@@ -35,6 +35,8 @@ class WakfuFarmingGUI:
     max_results_var = None
     groupThreshold_var = None
     eps_var = None
+    window_width_var = None
+    window_height_var = None
 
     reset_flag = False
 
@@ -174,6 +176,18 @@ class WakfuFarmingGUI:
         max_eps_text = ttk.Entry(self.tab_3, textvariable=self.eps_var)
         max_eps_label.grid(row=5, column=0)
         max_eps_text.grid(row=5, column=1)
+
+        max_window_width_label = ttk.Label(self.tab_3, text="Window width")
+        self.window_width_var = tk.StringVar()
+        max_window_width_text = ttk.Entry(self.tab_3, textvariable=self.window_width_var)
+        max_window_width_label.grid(row=5, column=0)
+        max_window_width_text.grid(row=5, column=1)
+
+        max_window_height_label = ttk.Label(self.tab_3, text="Window height")
+        self.window_height_var = tk.StringVar()
+        max_window_height_text = ttk.Entry(self.tab_3, textvariable=self.window_height_var)
+        max_window_height_label.grid(row=5, column=0)
+        max_window_height_text.grid(row=5, column=1)
 
     def create_bottom_frame(self):
         self.bottom_frame = ttk.Frame(self.root)
