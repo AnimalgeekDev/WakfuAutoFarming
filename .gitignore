@@ -1,1 +1,5 @@
 libs/__pycache__
+.venv
+train_data/
+runs
+*.pt
