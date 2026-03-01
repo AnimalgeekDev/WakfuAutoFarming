@@ -1,7 +1,8 @@
 __pycache__
 .venv
-train_data/*
-train_data/!.gitkeep
-runs
+yolo/train_data/*
+yolo/train_data/!.gitkeep
+yolo/runs/*
+yolo/runs/!.gitkeep
 *.pt
 .env

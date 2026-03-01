@@ -5,22 +5,9 @@ All functions here are small, well-typed, and documented for clarity.
 from typing import List, Tuple, Dict
 from PIL import Image, ImageDraw
 import random
+import hashlib
 
-def transform_yolo_coordinates_to_original(detections, width_org, height_org, scal_x, scal_y, yolo_size):
-    """
-    Transforma las coordenadas de las predicciones del espacio 640x640
-    al espacio de la imagen original
-    
-    Args:
-        resultados: resultados de yolo.predict()
-        w_original, h_original: dimensiones originales
-        escala_x, escala_y: factores de escala aplicados
-        target_size: tamaño objetivo (640)
-    
-    Returns:
-        Lista de bounding boxes en coordenadas originales
-    """
-    
+def transform_yolo_coordinates_to_original(detections, width_org, height_org, scal_x, scal_y, yolo_size):    
     detections_transformed = []
     
     for detection in detections:
@@ -49,21 +36,13 @@ def transform_yolo_coordinates_to_original(detections, width_org, height_org, sc
             'box': [x1_org, y1_org, x2_org, y2_org],
             'box_yolo': [x1, y1, x2, y2],
             'confidence': float(detection["confidence"]),
-            'label': detection["label"]
+            'class': detection["label"]
         })
     
     return detections_transformed
 
 
 def compute_centers(detections: List[Dict]) -> List[Tuple[int, int]]:
-    """Compute integer centers for a list of detections.
-
-    Args:
-        detections: list of dicts with key `box` (x1,y1,x2,y2).
-
-    Returns:
-        list of (x_center, y_center) tuples.
-    """
     centers: List[Tuple[int, int]] = []
     for det in detections:
         x1, y1, x2, y2 = det["box"]
@@ -73,36 +52,36 @@ def compute_centers(detections: List[Dict]) -> List[Tuple[int, int]]:
     return centers
 
 
-def overlay_boxes(image: Image.Image, detections: List[Dict]) -> Image.Image:
-    """Draw bounding boxes and labels on a copy of the image.
-
-    Args:
-        image: original PIL image.
-        detections: list of detections with `xyxy`, `label`, `confidence`.
-
-    Returns:
-        PIL.Image.Image: annotated image.
+def _color_from_class(class_name: str) -> tuple:
     """
+    Genera un color RGB consistente basado en el nombre de la clase.
+    """
+    h = hashlib.md5(class_name.encode()).hexdigest()
+    r = int(h[0:2], 16)
+    g = int(h[2:4], 16)
+    b = int(h[4:6], 16)
+    return (r, g, b)
+
+
+def overlay_boxes(image, detections: List[Dict]):
     img = image.copy()
     draw = ImageDraw.Draw(img)
+
     for det in detections:
         x1, y1, x2, y2 = det["box"]
-        draw.rectangle([x1, y1, x2, y2], outline="red", width=2)
-        label = f"{det['label']} {det['confidence']:.2f}"
-        draw.text((x1 + 4, y1 + 4), label, fill="red")
+        class_name = det["class"]
+
+        color = _color_from_class(class_name)
+
+        draw.rectangle([x1, y1, x2, y2], outline=color, width=3)
+
+        label = f"{class_name} {det['confidence']:.2f}"
+        draw.text((x1 + 4, y1 + 4), label, fill=color)
+
     return img
 
 
 def overlay_centers(image: Image.Image, centers: List[Tuple[int, int]]) -> Image.Image:
-    """Overlay colored points at provided centers on a copy of the image.
-
-    Args:
-        image: original PIL image.
-        centers: list of (x,y) coordinates.
-
-    Returns:
-        PIL.Image.Image: annotated image.
-    """
     img = image.copy()
     draw = ImageDraw.Draw(img)
     for cx, cy in centers:
@@ -113,15 +92,6 @@ def overlay_centers(image: Image.Image, centers: List[Tuple[int, int]]) -> Image
 
 
 def find_nearest_index(centers: List[Tuple[int, int]], reference: Tuple[int, int]) -> int:
-    """Return the index of the center closest to the reference point.
-
-    Args:
-        centers: list of (x,y) tuples.
-        reference: (x,y) reference point.
-
-    Returns:
-        int: index of nearest center, or -1 if centers is empty.
-    """
     if not centers:
         return -1
     rx, ry = reference

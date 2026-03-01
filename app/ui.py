@@ -11,7 +11,7 @@ from PIL import Image, ImageTk
 
 
 class AppUI:
-    def __init__(self, root: tk.Tk) -> None:
+    def __init__(self, root: tk.Tk, threshold: float) -> None:
         self.root = root
         self.root.title("WakfuAutoFarming")
         self.root.geometry("450x500")
@@ -20,8 +20,10 @@ class AppUI:
         self._position_bottom_right()
 
         # State variables
+        self.save_next_frame = False
         self.var_perform_actions = tk.BooleanVar(value=False)
         self.var_show_centers = tk.BooleanVar(value=False)
+        self.var_threshold = tk.DoubleVar(value=threshold)
 
         # Widgets
         self._build_widgets()
@@ -42,6 +44,27 @@ class AppUI:
         frame_top.pack(fill=tk.X, padx=8, pady=6)
         ttk.Checkbutton(frame_top, text="Realizar acciones", variable=self.var_perform_actions).pack(anchor=tk.W)
         ttk.Checkbutton(frame_top, text="Mostrar centros", variable=self.var_show_centers).pack(anchor=tk.W)
+        frame_slider = ttk.Frame(self.root)
+        frame_slider.pack(fill=tk.X, padx=8, pady=6)
+
+        ttk.Label(frame_slider, text="Threshold").pack(anchor=tk.W)
+
+        self.scale_threshold = ttk.Scale(
+            frame_slider,
+            from_=0.1,
+            to=1.0,
+            orient=tk.HORIZONTAL,
+            variable=self.var_threshold
+        )
+        self.scale_threshold.pack(fill=tk.X)
+
+        self.label_threshold_value = ttk.Label(
+            frame_slider,
+            text=f"{self.var_threshold.get():.2f}"
+        )
+        
+        self.label_threshold_value.pack(anchor=tk.E)
+        self.scale_threshold.configure(command=self._on_threshold_change)
 
         # Area 2: instruction text (hidden until actions enabled)
         self.instruction = ttk.Label(self.root, text="presione Q para detener acciones")
@@ -55,10 +78,21 @@ class AppUI:
         self.preview_label = ttk.Label(self.preview_container, text="NO IMAGE")
         self.preview_label.pack(expand=True)
 
-        # Area 4: exit button
+        # Area 4: botones
         btn_frame = ttk.Frame(self.root)
         btn_frame.pack(fill=tk.X, padx=8, pady=10)
-        ttk.Button(btn_frame, text="Salir", command=self.root.quit).pack()
+
+        ttk.Button(
+            btn_frame,
+            text="Guardar Frame",
+            command=lambda: setattr(self, "save_next_frame", True)
+        ).pack(side=tk.LEFT, expand=True, fill=tk.X, padx=4)
+
+        ttk.Button(
+            btn_frame,
+            text="Salir",
+            command=self.root.quit
+        ).pack(side=tk.LEFT, expand=True, fill=tk.X, padx=4)
 
         # Bind variable trace
         self.var_perform_actions.trace_add("write", lambda *_: self._update_instruction_visibility())
@@ -71,16 +105,18 @@ class AppUI:
             self.instruction.pack_forget()
 
     def update_image(self, pil_image: Optional[Image.Image]) -> None:
-        """Update the preview area with a PIL image or show NO IMAGE if None.
-
-        Args:
-            pil_image: image to show, or None.
-        """
         if pil_image is None:
             self.preview_label.configure(text="NO IMAGE", image="")
             return
-        # Resize to fit preview (450x250) while preserving aspect
+        
+        if self.save_next_frame:
+            pil_image.save('opencv/frames/frame.png')
+            self.save_next_frame = False
+        
         img_resized = pil_image.resize((450, 250))
         tk_img = ImageTk.PhotoImage(img_resized)
         self.preview_label.configure(image=tk_img, text="")
         self.preview_label.image = tk_img
+
+    def _on_threshold_change(self, value: str) -> None:
+        self.label_threshold_value.configure(text=f"{float(value):.2f}")
